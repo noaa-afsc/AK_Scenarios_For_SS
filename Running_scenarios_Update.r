@@ -28,11 +28,11 @@
 #' @init_dir is the director of the AK_SCENARIOS_FOR_SS files.
 ##
 
-#DIR = "Model_23.1.0.d_e_5cm/PROJ"; CYR = 2023; SYR = 1977;  SEXES = 1; FLEETS = 1; Scenario2 = 1; S2_F = 0.4; s4_F = 0.75; do_fig = TRUE; do_mark=TRUE;URL="https://apps-afsc.fisheries.noaa.gov/Plan_Team/2022/EBSpcod.pdf";pdf_tab=1; init_dir="C:/Users/steve.barbeaux/Work/GitHub/AK_Scenarios_For_SS"
+#DIR = "Model_24.1.25/PROJ"; CYR = 2025; SYR = 1977;  SEXES = 1; FLEETS = c(1,2); Scenario2 = 1; S2_F = 0.4; s4_F = 0.75; do_fig = TRUE; do_mark=FALSE;URL="https://www.npfmc.org/wp-content/PDFdocuments/SAFE/2024/EBSpcod.pdf";pdf_tab=1; init_dir="C:/Users/steve.barbeaux/Work/GitHub/AK_Scenarios_For_SS"
 
 
-Do_AK_TIER_3_Scenarios <- function(DIR = "Model_23.1.0.d_e_5cm/PROJ", CYR = 2023, SYR = 1977,  SEXES = 1, FLEETS = 1, Scenario2 = 1, 
-				   S2_F = 0.4, s4_F = 0.75, do_fig = TRUE, do_mark=TRUE,URL="https://apps-afsc.fisheries.noaa.gov/Plan_Team/2022/EBSpcod.pdf", 
+Do_AK_TIER_3_Scenarios <- function(DIR = "Model_24.1.25/PROJ", CYR = 2025, SYR = 1977,  SEXES = 1, FLEETS = 1, Scenario2 = 1, 
+				   S2_F = 0.4, s4_F = 0.75, do_fig = TRUE, do_mark=FALSE,URL="https://www.npfmc.org/wp-content/PDFdocuments/SAFE/2024/EBSpcod.pdf", 
 				   pdf_tab=1, init_dir="C:/Users/steve.barbeaux/Work/GitHub/AK_Scenarios_For_SS") {
 
 # Check if the specified directory exists
@@ -83,11 +83,39 @@ Do_AK_TIER_3_Scenarios <- function(DIR = "Model_23.1.0.d_e_5cm/PROJ", CYR = 2023
  	SS_writeforecast(scenario_1, dir = file.path(DIR,"scenario_1"), file = "forecast.ss", writeAll = TRUE, overwrite = TRUE)
     
 	FCASTY<-scenario_1$Nforecastyrs
+
+## find the SS executable
+	os_info <- Sys.info()
+	
+	executables <- list(
+	  		"Windows" = c("ss.exe", "ss3.exe", "ss3_win.exe"),
+	  		"Darwin" = c("ss_osx")
+		)
+
+	setwd(file.path(DIR,"scenario_1"))
+
+# Check the operating system
+		if (os_info["sysname"] %in% names(executables)) {
+  # Get the list of executables for the detected operating system
+  			os_executables <- executables[[os_info["sysname"]]]
+  
+  # Check if any of the executables exist
+  			existing_executables <- os_executables[file.exists(os_executables)]
+}
    
-   setwd(file.path(DIR,"scenario_1"))
 
 ## have to run scenario 1 first to get the forecast parameters for scenarios 6 and 7
-   r4ss::run(exe = "ss", skipfinished = FALSE, verbose = TRUE)
+	  
+  			if (length(existing_executables) > 0) {
+    # Run the first existing executable
+    			r4ss::run(exe = existing_executables[1], skipfinished = FALSE, verbose = FALSE)
+  			} else {
+    			print("No executable found for the operating system.")
+    			stop()
+  			}
+		  
+
+#  r4ss::run(exe = "ss", skipfinished = FALSE, verbose = TRUE)
 
 ## setting up parallel computing    
 	# Get the number of available cores
@@ -176,14 +204,14 @@ Do_AK_TIER_3_Scenarios <- function(DIR = "Model_23.1.0.d_e_5cm/PROJ", CYR = 2023
   		SS_writeforecast(scenario_C, dir = dir_name, file = "forecast.ss", writeAll = TRUE, overwrite = TRUE)
   
   # Set the working directory to the scenario directory
-  		setwd(dir_name)
+  setwd(dir_name)
     # Run the scenario
 	os_info <- Sys.info()
 
 	executables <- list(
-  		"Windows" = c("ss.exe", "ss3.exe"),
+  		"Windows" = c("ss.exe", "ss3.exe", "ss3_win.exe"),
   		"Darwin" = c("ss_osx")
-	)
+ )
 
 # Check the operating system
 		if (os_info["sysname"] %in% names(executables)) {
@@ -198,9 +226,11 @@ Do_AK_TIER_3_Scenarios <- function(DIR = "Model_23.1.0.d_e_5cm/PROJ", CYR = 2023
     			r4ss::run(exe = existing_executables[1], skipfinished = FALSE, verbose = FALSE)
   			} else {
     			print("No executable found for the operating system.")
+    			stop()
   			}
-		} 	
-	} 
+  		}
+  	}
+
 
 
 # Run scenarios in parallel
@@ -502,4 +532,9 @@ if(do_mark){
 
 
 
-##test=Do_AK_TIER_3_Scenarios(DIR = "M14_2d1/PROJ", CYR = 2023, SYR = 1977,  SEXES = 1, FLEETS = c(1:2), Scenario2 = 1, S2_F = 0.4, s4_F = 0.75, do_fig = TRUE, do_mark=FALSE, URL='https://www.npfmc.org/wp-content/PDFdocuments/SAFE/2024/BSAIskate.pdf') 
+test=Do_AK_TIER_3_Scenarios(DIR = "Model_24.1.25/PROJ", CYR = 2025, SYR = 1977,  SEXES = 1, FLEETS = c(1:2), Scenario2 = 1, S2_F = 0.4, s4_F = 0.75, do_fig = TRUE, do_mark=FALSE, URL='https://files.npfmc.org/SAFE/2024/EBSpcod.pdf') 
+
+
+
+
+test=Do_AK_TIER_3_Scenarios(DIR = "Model_24.1.25/PROJ", CYR = 2025, SYR = 1977,  SEXES = 1, FLEETS = c(1:2), Scenario2 = 1, S2_F = 0.4, s4_F = 0.75, do_fig = TRUE, do_mark=FALSE, URL='https://files.npfmc.org/SAFE/2024/EBSpcod.pdf') 
