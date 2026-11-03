@@ -2,8 +2,6 @@
 
 Alaska Tier 3 harvest projection scenarios using Stock Synthesis 3 and `r4ss`.
 
-> **Validation status:** This package is assembled from `AK_Tier3_Scenarios_refactored_v12.R` without changes to the underlying scenario calculations. The code has **not** been executed against your SS3 model or numerically regression-tested in this environment. Review five-year ABC/OFL values against SS3 outputs before assessment use.
-
 ## What's included
 
 - `Do_AK_TIER_3_Scenarios()` runs 15 projection scenarios and returns annual and five-year summary tables.
@@ -25,16 +23,16 @@ library(AKScenariosForSS)
 Or, after uploading to GitHub:
 
 ```r
-remotes::install_github("YOUR_GITHUB_USER/YOUR_REPOSITORY")
+remotes::install_github("noaa-afsc/AK_Scenarios_For_SS")
 ```
 
 SS3 must be available as an executable in the model input folder (or through `exe`). It is **not** installed with this R package.
 
 ## Model input folder
 
-Create a dedicated `PROJ` directory containing a **converged** assessment run with its model inputs, `ss.par`, `starter.ss` configured to read `ss.par`, `forecast.ss`, and your platform's SS3 executable. The function writes 15 `scenario_*` subdirectories there, overwriting scenario inputs; use a copy of your assessment run.
+Create a dedicated `PROJ` directory containing a **converged** assessment run with its model inputs,`.ctl`,`.dat`, `starter.ss`,`forecast.ss`, and your platform's SS3 executable. The function writes 15 `scenario_*` subdirectories there, overwriting scenario inputs; use a copy of your assessment run.
 
-For Scenario 2 option 3, provide `Scenario2_catch.csv` with `Year,Seas,Fleet,Catch_or_F`. It is searched in your working directory or the parent of `DIR`, unless `catch_csv` provides a path.
+For Scenario 2 option 3, provide `Scenario2_catch.csv` with `Year,Seas,Fleet,Catch_or_F`. It is searched in your working directory, unless `catch_csv` provides a path.
 
 ## Example
 
@@ -59,22 +57,10 @@ result$Tables$Catch
 result$FIGS[[2]]$ALL  # Catch plot for scenarios 1-7
 ```
 
-## Package maintenance
-
-```r
-roxygen2::roxygenise("/path/to/AKScenariosForSS")
-testthat::test_local("/path/to/AKScenariosForSS")
-# Or from the package directory:
-# devtools::check()
-```
-
-The package includes a manual `man/` help file and `NAMESPACE`, so documentation is available without running roxygen on installation. The roxygen header remains the source of truth.
 
 ## Integration testing and known limitations
 
 The tests under `tests/testthat` are **offline unit tests**, not model runs. The `tests/manual/regression_comparison.R` script provides result comparisons for a **separate SS3-enabled machine**. Never use the same `PROJ` directory for legacy and refactored tests.
-
-Scientific checks still required: single-sex SSB division by two, input-basis/F convention for Scenario 2 option 2, annual F and catch labels for multi-fleet output, and five-year ABC/OFL scenario mapping. `init_dir` is retained for backwards-compatible calls but unused.
 
 ## License
 
