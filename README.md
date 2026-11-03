@@ -1,67 +1,81 @@
- # Alaska Projection Scenarios for Stock Synthesis
+# AKScenariosForSS
 
-This repository is a scientific product and is not official communication of the National Oceanic and Atmospheric Administration, or the United States Department of Commerce. All NOAA GitHub project code is provided on an ‘as is’ basis and the user assumes responsibility for its use. Any claims against the Department of Commerce or Department of Commerce bureaus stemming from the use of this GitHub project will be governed by all applicable Federal law. Any reference to specific commercial products, processes, or services by service mark, trademark, manufacturer, or otherwise, does not constitute or imply their endorsement, recommendation or favoring by the Department of Commerce. The Department of Commerce seal and logo, or the seal and logo of a DOC bureau, shall not be used in any manner to imply endorsement of any commercial product or activity by DOC or the United States Government.
+Alaska Tier 3 harvest projection scenarios using Stock Synthesis 3 and `r4ss`.
 
-Version: December 1, 2025
+> **Validation status:** This package is assembled from `AK_Tier3_Scenarios_refactored_v12.R` without changes to the underlying scenario calculations. The code has **not** been executed against your SS3 model or numerically regression-tested in this environment. Review five-year ABC/OFL values against SS3 outputs before assessment use.
 
-Created by Steve Barbeaux  
-E-mail: steve.barbeaux@noaa.gov  
-Phone: ‪(206) 526-4211‬
+## What's included
 
-This function performs the 7 Alaska projection scenarios for Stock Synthesis 3 for tier 3 models. It runs the scenarios, saves them to the working directory, and produces stock figures for the projections. However, please note that this function could use some work on generalization and making the figures more suitable for assessment purposes.
+- `Do_AK_TIER_3_Scenarios()` runs 15 projection scenarios and returns annual and five-year summary tables.
+- Scenarios 2–8 and 9–11 are parallelized where workers are available. Scenarios 9–11 use the catch source selected by `Fyr_ts`.
+- Scenarios 9–15 can skip Hessian calculations with `no_hessian_late = TRUE`.
+- Spawning-biomass and catch figures include scenarios 1–7 only. Catch figures include horizontal catch-at-F40% and catch-at-F35% reference lines.
+- When `Scenario2 == 3` **and** `Fyr_ts == 2`, the scenario 12–15 forecast catches come only from the matching `Scenario2_catch.csv` rows for their horizon; missing fleets/years are not filled.
 
-## Usage
+## Install
 
-In the `starter.ss` file, make sure to change it to read from the converged `.par` file:
-  1 # 0=use init values in control file; 1=use ss.par  
- 
-Assumptions:
-- You have already specified the forecast parameters appropriately in the `forecast.ss` file for scenario 1.
-- There is no catch or F already specified in the forecast file.
+This folder is an **R package**. On a computer with R installed:
 
-Parameters:
-- `DIR`: Model directory
-- `CYR`: Model current year
-- `SYR`: Start year for the model
-- `SEXES`: Number of sexes in the model
-- `fleets`: The fleet number/s in SS for your fisheries
-- `Scenario2`: Indicates whether you wish to have a different catch for scenario 2 (1 = FmaxABC, 2 = F as S2_F, 3 = specified catch from a formatted CSV saved in the root directory named 'Scenario2_catch.csv', must have an entry for each year, season, and fleet for the years that differ from Fmaxabc with columns "Year, Seas, Fleet, Catch_or_F")
-- `s4_F` is the F for scenario 4, defaults to 0.75, should be 0.65 for some species check your requirments
-- `do_fig`: Whether to plot figures
-- `do_mark`  whether to make markdown tables
-- `URL` is the url address of the previous stock assessment document
-- `pdf_tab` is the table number in the pdf to collect executive summary table data
-- `init_dir` is the director of the AK_SCENARIOS_FOR_SS files.
+```r
+install.packages(c("remotes", "r4ss", "data.table", "ggplot2", "testthat", "roxygen2"))
+remotes::install_local("/path/to/AKScenariosForSS", dependencies = TRUE)
+library(AKScenariosForSS)
+```
 
-## Output
+Or, after uploading to GitHub:
 
-<B>SSB</B><br> 
-This provides all output from the model start year to the final projection year as specified in the forecast file for each scenario. Table with columns Yr, TOT, SUMM, SSB, std, F, Catch, SSB_unfished, and model. Yr = year, TOT = total biomass, SUMM= Summary biomass as specified in the starter file, SSB is the female spawning biomass, std = standard deviation of the female spawning biomass, F = sum apical F, Catch = total catch, SSB_unfished =  unfished female spawning biomass, and model = Scenario.    
+```r
+remotes::install_github("YOUR_GITHUB_USER/YOUR_REPOSITORY")
+```
 
-<B>CATCH</B><br>
-This provides projected catch estimates for each scenario. Table with columns Yr, Catch, Catch_std, and model, Yr = year, Catch = total catch, Catch_std = standard deviation of the catch, and model = scenario. 
+SS3 must be available as an executable in the model input folder (or through `exe`). It is **not** installed with this R package.
 
-<B>Two_year</B><br>
-Table with projections out two years. Table with columns Yr, SSB, SSB_PER, SB100, SB40, SB35, F40, F35, C_ABC, C_OFL. 
+## Model input folder
 
-<B>Tables</B><br>
-List with two three tables including Catch, F, and SSB corresponsing to the standard projection tables included in the stock assessment 
+Create a dedicated `PROJ` directory containing a **converged** assessment run with its model inputs, `ss.par`, `starter.ss` configured to read `ss.par`, `forecast.ss`, and your platform's SS3 executable. The function writes 15 `scenario_*` subdirectories there, overwriting scenario inputs; use a copy of your assessment run.
 
-<B>FIGS</B><br>
-List with two sets of figures including standard projection figures showing spawning biomass and catch projections. 
+For Scenario 2 option 3, provide `Scenario2_catch.csv` with `Year,Seas,Fleet,Catch_or_F`. It is searched in your working directory or the parent of `DIR`, unless `catch_csv` provides a path.
 
-Example figures:<br>
-<B><I>SSB</I></B><br>
-![image](https://github.com/afsc-assessments/AK_Scenarios_For_SS/assets/5395237/379a0331-8757-486f-81c0-5f38228a0bfc)
+## Example
 
-![image](https://github.com/afsc-assessments/AK_Scenarios_For_SS/assets/5395237/baf2959e-9d0a-4e7b-87f0-d79ae783152f)
+```r
+library(AKScenariosForSS)
+result <- Do_AK_TIER_3_Scenarios(
+  DIR = "Model_26_1_2/PROJ",
+  CYR = 2026,
+  SYR = 1977,
+  SEXES = 1,
+  FLEETS = 1:2,
+  Scenario2 = 3,
+  Fyr_ts = 2,
+  catch_csv = "Scenario2_catch.csv",
+  cores = 8,
+  do_fig = TRUE,
+  no_hessian_late = TRUE
+)
 
-<B><I>Catch</I></B><br>
-![image](https://github.com/afsc-assessments/AK_Scenarios_For_SS/assets/5395237/e1130b51-b94b-416e-b383-69741d71b030)
-![image](https://github.com/afsc-assessments/AK_Scenarios_For_SS/assets/5395237/bb202bdc-b566-4ffb-9401-02b46eec726a)
+result$Five_year
+result$Tables$Catch
+result$FIGS[[2]]$ALL  # Catch plot for scenarios 1-7
+```
 
-Example usage:
-```R
-profiles <- Do_AK_TIER_3_Scenarios(DIR = "Model_23.1.0.d", CYR = 2023, SYR = 1977,  SEXES = 1, FLEETS = 1, Scenario2 = 1, S2_F = 0.4,
-					s4_F = 0.75, do_fig = TRUE, do_mark=TRUE,URL="https://apps-afsc.fisheries.noaa.gov/Plan_Team/2022/EBSpcod.pdf",
-					pdf_tab=1, init_dir=" C:/Users/steve.barbeaux/Work/GitHub/AK_Scenarios_For_SS")
+## Package maintenance
+
+```r
+roxygen2::roxygenise("/path/to/AKScenariosForSS")
+testthat::test_local("/path/to/AKScenariosForSS")
+# Or from the package directory:
+# devtools::check()
+```
+
+The package includes a manual `man/` help file and `NAMESPACE`, so documentation is available without running roxygen on installation. The roxygen header remains the source of truth.
+
+## Integration testing and known limitations
+
+The tests under `tests/testthat` are **offline unit tests**, not model runs. The `tests/manual/regression_comparison.R` script provides result comparisons for a **separate SS3-enabled machine**. Never use the same `PROJ` directory for legacy and refactored tests.
+
+Scientific checks still required: single-sex SSB division by two, input-basis/F convention for Scenario 2 option 2, annual F and catch labels for multi-fleet output, and five-year ABC/OFL scenario mapping. `init_dir` is retained for backwards-compatible calls but unused.
+
+## License
+
+No license has been selected. The `LICENSE` file is a placeholder and must be replaced with the project owner's approved terms before publishing or permitting redistribution. The package metadata should be updated at the same time.

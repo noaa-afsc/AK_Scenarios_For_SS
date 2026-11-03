@@ -1,0 +1,20 @@
+Package: AKScenariosForSS
+Title: Alaska Tier 3 Stock Synthesis Projection Scenarios
+Version: 0.1.0
+Authors@R: person("Steve", "Barbeaux", email = "steve.barbeaux@noaa.gov", role = c("aut", "cre"))
+Description: Runs a suite of Alaska Tier 3 Stock Synthesis 3 forecast
+    scenarios from a converged model and prepares five-year harvest
+    projection summaries and optional figures. Requires an external
+    Stock Synthesis executable for model execution.
+License: file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Depends: R (>= 4.1.0)
+Imports:
+    data.table,
+    ggplot2,
+    r4ss
+Suggests:
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3

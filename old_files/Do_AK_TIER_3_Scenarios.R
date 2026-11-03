@@ -85,7 +85,7 @@ Do_AK_TIER_3_Scenarios <- function(DIR = "Model_24.1.25/PROJ", CYR = 2025, SYR =
 	
 	executables <- list(
 	  		"Windows" = c("ss.exe", "ss3.exe", "ss3_win.exe"),
-	  		"Darwin" = c("ss_osx")
+	  		"Darwin" = c("ss_osx","ss3","ss3_osx_arm64")
 		)
 
 	setwd(file.path(DIR,"scenario_1"))
@@ -119,14 +119,14 @@ Do_AK_TIER_3_Scenarios <- function(DIR = "Model_24.1.25/PROJ", CYR = 2025, SYR =
 	setwd(parent_dir)
 
 	num_cores <- detectCores()
-	if(num_cores>11)num_cores=11
+	if(num_cores>15)num_cores=15
 	
 # Set the number of cores to be used for parallel computing
 
 	registerDoParallel(cores = num_cores)
 
 # Define the list of scenarios
-	scenarios <- c("scenario_2", "scenario_3", "scenario_4", "scenario_5", "scenario_6", "scenario_7", "scenario_8", "scenario_9", "scenario_10", "scenario_11")
+	scenarios <- c("scenario_2", "scenario_3", "scenario_4", "scenario_5", "scenario_6", "scenario_7", "scenario_8", "scenario_9", "scenario_10", "scenario_11", "scenario_12", "scenario_13", "scenario_14", "scenario_15")
 
 # Define 5-year scenario
 scenario_F <- paste0("scenario_",Fyr_ts)
@@ -166,7 +166,9 @@ scenario_F <- paste0("scenario_",Fyr_ts)
 
     		}
 			if(Scenario2==3){
-				scenario_C$ForeCatch <- read.csv("Scenario2_catch.csv",header=T)
+         scenario_C$ForeCatch<-read.csv("Scenario2_catch.csv",header=T)
+         print("Downloaded new catch data:")
+         print(sceanario_C$ForeCatch)
     		}
   		} else if (scenario == 'scenario_3') {
     		scenario_C$Forecast<-4
@@ -174,49 +176,62 @@ scenario_F <- paste0("scenario_",Fyr_ts)
     		scenario_C$BfornoF<-0.0001      ## cluge to get rid of control rule scaling of ave. F
 			scenario_C$Fcast_years [c(3,4)]<-c(CYR-5, CYR-1)
   		} else if (scenario == 'scenario_4') {
-  		#scenario_C$Forecast <- 5
-			scenario_C$Flimitfraction <- s4_F
-			#scenario_C$SPRtarget <- s4_F
+  			#scenario_C$Forecast <- 5
+				scenario_C$Flimitfraction <- s4_F
+				#scenario_C$SPRtarget <- s4_F
 
   		} else if (scenario == 'scenario_5') {
-			catch <- expand.grid(Year=c((CYR+1):(CYR+FCASTY)),Seas=1,Fleet=FLEETS,Catch_or_F=0)
-			names(catch)<-names(scenario_C$ForeCatch)
-			scenario_C$ForeCatch <- rbind(scenario_C$ForeCatch,catch)
+				catch <- expand.grid(Year=c((CYR+1):(CYR+FCASTY)),Seas=1,Fleet=FLEETS,Catch_or_F=0)
+				names(catch)<-names(scenario_C$ForeCatch)
+				scenario_C$ForeCatch <- rbind(scenario_C$ForeCatch,catch)
   		} else if (scenario == 'scenario_6') {
   			scenario_C$Btarget   <- 0.35
-			scenario_C$SPRtarget <- 0.35
-			scenario_C$Flimitfraction <- 1.0
+				scenario_C$SPRtarget <- 0.35
+				scenario_C$Flimitfraction <- 1.0
   		} else if (scenario == 'scenario_7') {
-			scenario_C$Btarget   <- 0.35
-			scenario_C$SPRtarget <- 0.35
-			scenario_C$Flimitfraction <- 1.0
+				scenario_C$Btarget   <- 0.35
+				scenario_C$SPRtarget <- 0.35
+				scenario_C$Flimitfraction <- 1.0
     		x<-SS_output(dir=file.path(dir1,"scenario_1"))
-			scenario_C$ForeCatch<-SS_ForeCatch(x,yrs=CYR:(CYR+2))
+				scenario_C$ForeCatch<-SS_ForeCatch(x,yrs=CYR:(CYR+2))
   		} else if (scenario == 'scenario_8') {
     		scenario_C$Btarget   <- 0.35
-			scenario_C$SPRtarget <- 0.35
-			scenario_C$Flimitfraction <- 1.0
-			x<-SS_output(dir=file.path(dir1,"scenario_1"))
-			scenario_C$ForeCatch<-SS_ForeCatch(x,yrs=CYR:(CYR+1))
+				scenario_C$SPRtarget <- 0.35
+				scenario_C$Flimitfraction <- 1.0
+				x<-SS_output(dir=file.path(dir1,"scenario_1"))
+				scenario_C$ForeCatch<-SS_ForeCatch(x,yrs=CYR:(CYR+1))
 			} else if (scenario == 'scenario_9') {   ## OFL for 2029
     		scenario_C$Btarget   <- 0.35
-			scenario_C$SPRtarget <- 0.35
-			scenario_C$Flimitfraction <- 1.0
-			x<-SS_output(dir=file.path(dir1,scenario_F))
-			scenario_C$ForeCatch<-SS_ForeCatch(x,yrs=CYR:(CYR+2))
+				scenario_C$SPRtarget <- 0.35
+				scenario_C$Flimitfraction <- 1.0
+				x<-SS_output(dir=file.path(dir1,scenario_F))
+				scenario_C$ForeCatch<-SS_ForeCatch(x,yrs=CYR:(CYR+2))
 			} else if (scenario == 'scenario_10') {  ## OFL for 2030
     		scenario_C$Btarget   <- 0.35
-			scenario_C$SPRtarget <- 0.35
-			scenario_C$Flimitfraction <- 1.0
-			x<-SS_output(dir=file.path(dir1,scenario_F))
-			scenario_C$ForeCatch<-SS_ForeCatch(x,yrs=CYR:(CYR+3))
+				scenario_C$SPRtarget <- 0.35
+				scenario_C$Flimitfraction <- 1.0
+				x<-SS_output(dir=file.path(dir1,scenario_F))
+				scenario_C$ForeCatch<-SS_ForeCatch(x,yrs=CYR:(CYR+3))
 			} else if (scenario == 'scenario_11') {  ## OFL for 2031
     		scenario_C$Btarget   <- 0.35
-			scenario_C$SPRtarget <- 0.35
-			scenario_C$Flimitfraction <- 1.0
-			x<-SS_output(dir=file.path(dir1,scenario_F))
-			scenario_C$ForeCatch<-SS_ForeCatch(x,yrs=CYR:(CYR+4))
-			} 
+				scenario_C$SPRtarget <- 0.35
+				scenario_C$Flimitfraction <- 1.0
+				x<-SS_output(dir=file.path(dir1,scenario_F))
+				scenario_C$ForeCatch<-SS_ForeCatch(x,yrs=CYR:(CYR+4))
+
+			} else if (scenario == 'scenario_12') {  
+    		x<-SS_output(dir=file.path(dir1, scenario_F))
+				scenario_C$ForeCatch<-SS_ForeCatch(x,yrs=CYR:(CYR+1))
+			} else if (scenario == 'scenario_13') {  
+				x<-SS_output(dir=file.path(dir1, scenario_F))
+				scenario_C$ForeCatch<-SS_ForeCatch(x,yrs=CYR:(CYR+2))
+			} else if (scenario == 'scenario_14') {  
+				x<-SS_output(dir=file.path(dir1, scenario_F))
+				scenario_C$ForeCatch<-SS_ForeCatch(x,yrs=CYR:(CYR+3))
+		  } else if (scenario == 'scenario_15') {  
+				x<-SS_output(dir=file.path(dir1, scenario_F))
+				scenario_C$ForeCatch<-SS_ForeCatch(x,yrs=CYR:(CYR+4))
+			}
 
   # Write the modified scenario to the scenario directory
   		SS_writeforecast(scenario_C, dir = dir_name, file = "forecast.ss", writeAll = TRUE, overwrite = TRUE)
@@ -228,7 +243,7 @@ scenario_F <- paste0("scenario_",Fyr_ts)
 
 	executables <- list(
   		"Windows" = c("ss.exe", "ss3.exe", "ss3_win.exe"),
-  		"Darwin" = c("ss_osx")
+  		"Darwin" = c("ss_osx","ss3","ss3_osx_arm64")
  )
 
 # Check the operating system
@@ -264,8 +279,8 @@ scenario_F <- paste0("scenario_",Fyr_ts)
 	
 	
 	setwd(DIR)
-	scenarios <- c("scenario_1", "scenario_2", "scenario_3", "scenario_4", "scenario_5", "scenario_6", "scenario_7", "scenario_8", "scenario_9", "scenario_10", "scenario_11")
-	mods1<-SSgetoutput(dirvec=scenarios[1:11])
+	scenarios <- c("scenario_1", "scenario_2", "scenario_3", "scenario_4", "scenario_5", "scenario_6", "scenario_7", "scenario_8", "scenario_9", "scenario_10", "scenario_11", "scenario_12", "scenario_13", "scenario_14", "scenario_15")
+	mods1<-SSgetoutput(dirvec=scenarios[1:15])
 
 	kluge1<-data.table(mods1[[1]]$sprseries)$F_report[1]  ## kluge to deal with column name change between versions
  
@@ -318,26 +333,39 @@ scenario_F <- paste0("scenario_",Fyr_ts)
 	SB40 <- data.table(mods1[[1]]$derived_quants)[Label == "SSB_SPR"]$Value / sex
 	SB35 <- data.table(mods1[[8]]$derived_quants)[Label == "SSB_SPR"]$Value / sex
 	
-	F40_1 <- summ[[Fyr_ts]][Yr == CYR + 1]$F
+	Fcatch_1 <-summ[[Fyr_ts]][Yr == CYR + 1]$F
+	F40_1 <- summ[[1]][Yr == CYR + 1]$F
 	F35_1 <- summ[[6]][Yr == CYR + 1]$F
 	
-	catchABC_1 <- Pcatch[[Fyr_ts]][Yr == CYR + 1]$Catch
+	
+  catchC_1 <- Pcatch[[Fyr_ts]][Yr == CYR + 1]$Catch
+	catchABC_1 <- Pcatch[[1]][Yr == CYR + 1]$Catch
 	catchOFL_1 <- Pcatch[[6]][Yr == CYR + 1]$Catch
 	
-	F40_2 <- summ[[Fyr_ts]][Yr == CYR + 2]$F
-	F40_3 <- summ[[Fyr_ts]][Yr == CYR + 3]$F
-	F40_4 <- summ[[Fyr_ts]][Yr == CYR + 4]$F
-	F40_5 <- summ[[Fyr_ts]][Yr == CYR + 5]$F
+	Fcatch_2 <- summ[[Fyr_ts]][Yr == CYR + 2]$F
+	Fcatch_3 <- summ[[Fyr_ts]][Yr == CYR + 3]$F
+	Fcatch_4 <- summ[[Fyr_ts]][Yr == CYR + 4]$F
+	Fcatch_5 <- summ[[Fyr_ts]][Yr == CYR + 5]$F
+
+	F40_2 <- summ[[12]][Yr == CYR + 2]$F
+	F40_3 <- summ[[13]][Yr == CYR + 3]$F
+	F40_4 <- summ[[14]][Yr == CYR + 4]$F
+	F40_5 <- summ[[15]][Yr == CYR + 5]$F
 	
 	F35_2 <- summ[[8]][Yr == CYR + 2]$F
 	F35_3 <- summ[[9]][Yr == CYR + 3]$F
 	F35_4 <- summ[[10]][Yr == CYR + 4]$F
 	F35_5 <- summ[[11]][Yr == CYR + 5]$F
 	
-	catchABC_2 <- Pcatch[[Fyr_ts]][Yr == CYR + 2]$Catch
-	catchABC_3 <- Pcatch[[Fyr_ts]][Yr == CYR + 3]$Catch
-	catchABC_4 <- Pcatch[[Fyr_ts]][Yr == CYR + 4]$Catch
-	catchABC_5 <- Pcatch[[Fyr_ts]][Yr == CYR + 5]$Catch
+	catchC_2 <- Pcatch[[Fyr_ts]][Yr == CYR + 2]$Catch
+	catchC_3 <- Pcatch[[Fyr_ts]][Yr == CYR + 3]$Catch
+	catchC_4 <- Pcatch[[Fyr_ts]][Yr == CYR + 4]$Catch
+	catchC_5 <- Pcatch[[Fyr_ts]][Yr == CYR + 5]$Catch
+
+	catchABC_2 <- Pcatch[[12]][Yr == CYR + 2]$Catch
+	catchABC_3 <- Pcatch[[13]][Yr == CYR + 3]$Catch
+	catchABC_4 <- Pcatch[[14]][Yr == CYR + 4]$Catch
+	catchABC_5 <- Pcatch[[15]][Yr == CYR + 5]$Catch
 
 	catchOFL_2 <- Pcatch[[8]][Yr == CYR + 2]$Catch
 	catchOFL_3 <- Pcatch[[9]][Yr == CYR + 3]$Catch
@@ -345,10 +373,10 @@ scenario_F <- paste0("scenario_",Fyr_ts)
 	catchOFL_5 <- Pcatch[[11]][Yr == CYR + 5]$Catch
 
 	SSB_1 <- summ[[Fyr_ts]][Yr == CYR + 1]$SSB
-	SSB_2 <- summ[[Fyr_ts]][Yr == CYR + 2]$SSB
-	SSB_3 <- summ[[Fyr_ts]][Yr == CYR + 3]$SSB
-	SSB_4 <- summ[[Fyr_ts]][Yr == CYR + 4]$SSB
-	SSB_5 <- summ[[Fyr_ts]][Yr == CYR + 5]$SSB
+	SSB_2 <- summ[[12]][Yr == CYR + 2]$SSB
+	SSB_3 <- summ[[13]][Yr == CYR + 3]$SSB
+	SSB_4 <- summ[[14]][Yr == CYR + 4]$SSB
+	SSB_5 <- summ[[15]][Yr == CYR + 5]$SSB
 
 	Five_Year <- data.table(
   		Yr = c((CYR + 1):(CYR + 5)),
@@ -357,8 +385,12 @@ scenario_F <- paste0("scenario_",Fyr_ts)
   		SB100 = rep(SB100, 5),
   		SB40 = rep(SB40, 5),
   		SB35 = rep(SB35, 5),
-  		F40 = c(F40_1, F40_2, F40_3, F40_4, F40_5),
-  		F35 = c(F35_1, F35_2, F35_3, F35_4, F35_5),
+  		
+  		FCATCH = c(Fcatch_1, Fcatch_2, Fcatch_3, Fcatch_4, Fcatch_5),
+  		FOFL = c(F35_1, F35_2, F35_3, F35_4, F35_5),
+  		FABC= c(F40_1, F40_2, F40_3, F40_4, F40_5),
+  		
+  		C_CATCH= c(catchC_1, catchC_2, catchC_3, catchC_4, catchC_5),
   		C_ABC = c(catchABC_1, catchABC_2, catchABC_3, catchABC_4, catchABC_5),
   		C_OFL = c(catchOFL_1, catchOFL_2, catchOFL_3, catchOFL_4, catchOFL_5)
 	)
@@ -559,5 +591,4 @@ for (i in 1:length(scenarios_P)){
 
 
 
-
-## test26.1=Do_AK_TIER_3_Scenarios(DIR = "Model_26.1_750/PROJ", CYR = 2026, SYR = 1977,  SEXES = 1, FLEETS = c(1:2), Scenario2 = 1, S2_F = 0.4, s4_F = 0.75, Fyr_ts=2,do_fig = TRUE) 
+ test26.1=Do_AK_TIER_3_Scenarios(DIR = "Model_26.1_750/PROJ", CYR = 2026, SYR = 1977,  SEXES = 1, FLEETS = c(1:2), Scenario2 = 3, S2_F = 0.4, s4_F = 0.75, Fyr_ts=2,do_fig = TRUE) 
