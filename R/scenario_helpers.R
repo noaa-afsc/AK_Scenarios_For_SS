@@ -5,6 +5,27 @@
   if (length(missing)) stop("Install required packages: ", paste(missing, collapse = ", "))
 }
 
+# Resolve the optional Scenario 2 catch CSV before any SS3 runs start.
+.ak_scenario2_csv <- function(catch_csv, model_dir) {
+  if (!is.character(catch_csv) || length(catch_csv) != 1L ||
+      is.na(catch_csv) || !nzchar(trimws(catch_csv))) {
+    stop("For Scenario2 = 3, catch_csv must be a nonempty filename or path.",
+         call. = FALSE)
+  }
+  candidates <- unique(c(catch_csv, file.path(dirname(model_dir), catch_csv)))
+  existing <- candidates[file.exists(candidates) & !dir.exists(candidates)]
+  if (!length(existing)) {
+    msg <- paste0(
+      "Scenario2 = 3 requires a catch CSV, but the file was not found. ",
+      "Searched: ", paste(candidates, collapse = "; "),
+      ". Supply catch_csv or put Scenario2_catch.csv in a searched location."
+    )
+    warning(msg, call. = FALSE)
+    stop("Stopping: required Scenario 2 catch CSV is missing.", call. = FALSE)
+  }
+  normalizePath(existing[[1L]], winslash = "/", mustWork = TRUE)
+}
+
 .ak_one <- function(x, label) {
   if (length(x) != 1L || is.na(x)) stop("Expected exactly one value for ", label, "; found ", length(x))
   as.numeric(x)

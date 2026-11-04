@@ -45,8 +45,9 @@
 #' @param exe Optional SS3 executable filename or path. If `NULL`, search
 #'   for a platform-appropriate executable in `DIR`.
 #' @param cores Maximum number of parallel workers (up to 7 initially).
-#' @param catch_csv Path to `Scenario2_catch.csv`. Searched relative to
-#'   the current working directory or the parent of `DIR`.
+#' @param catch_csv Path to `Scenario2_catch.csv`. Required when
+#'   `Scenario2 = 3`; searched relative to the current working directory
+#'   or the parent of `DIR`. If missing, warn and stop before running SS3.
 #' @param skip_run Logical; reuse existing scenario outputs instead of
 #'   executing SS3. Scenario forecast files may still be overwritten.
 #' @param no_hessian_late Logical; when TRUE and `skip_run = FALSE`, pass
@@ -98,6 +99,8 @@ Do_AK_TIER_3_Scenarios <- function(
     stop("Scenario2=2 F input is currently single-fleet only; revise before using multiple fleets")
   if (Scenario2 == 2L && S2_F < 0) stop("S2_F must be nonnegative")
   if (s4_F <= 0 || s4_F > 1) stop("s4_F must be in (0,1]")
+  # Fail before reading forecast data, launching workers, or running SS3.
+  csv_path <- if (Scenario2 == 3L) .ak_scenario2_csv(catch_csv, DIR) else NULL
   base <- r4ss::SS_readforecast(file = file.path(DIR, "forecast.ss"))
   FCASTY <- .ak_one(base$Nforecastyrs, "Nforecastyrs")
   if (FCASTY < 5L) stop("At least five forecast years are required")
@@ -110,9 +113,6 @@ Do_AK_TIER_3_Scenarios <- function(
   executable <- if (skip_run) NULL else .ak_executable(DIR, exe)
   catch_file <- NULL
   if (Scenario2 == 3L) {
-    # Path explicit to prevent changing-working-directory bugs.
-    csv_path <- if (file.exists(catch_csv)) catch_csv else file.path(dirname(DIR), catch_csv)
-    if (!file.exists(csv_path)) stop("Scenario2 catch CSV not found: ", csv_path)
     catch_file <- .ak_check_forecatch(utils::read.csv(csv_path), FLEETS,
                                       label = "Scenario2_catch.csv")
   }
